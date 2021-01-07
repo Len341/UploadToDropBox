@@ -22,13 +22,13 @@ namespace UploadToDropBox
         static async Task Upload()
         {
             var dbx = new DropboxClient(ConfigurationManager.AppSettings["AccessToken"]);
-            var directoryPath = @"C:\Users\Leonard Botha\Documents\WORK\DROPBOXUPLOADS";
+            var directoryPath = @"C:\YOUR\DIRECTORY\CONTAINING\UPLOAD\FILES";
 
-            foreach (string fileName in Directory.GetFiles(directoryPath))
+            foreach (string filePath in Directory.GetFiles(directoryPath))
             {
-                if (File.Exists(fileName))
+                if (File.Exists(filePath))
                 {
-                    var fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read);
+                    var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
 
                     byte[] content;
                     using (var reader = new BinaryReader(fileStream))
@@ -38,11 +38,15 @@ namespace UploadToDropBox
 
                     using (var mem = new MemoryStream(content))
                     {
-                        string name = fileName.Substring(fileName.LastIndexOf("\\")+1,
-                            fileName.Length - fileName.LastIndexOf("\\")-1);
+                        string filename = filePath.Substring(filePath.LastIndexOf("\\")+1,
+                            filePath.Length - filePath.LastIndexOf("\\")-1);
 
-                        Console.WriteLine("Uploading "+name);
-                        await dbx.Files.UploadAsync("/Uploads/" + name,
+                        Console.WriteLine("Uploading "+filename);
+
+                        //You should have a Uploads folder in your dropbox
+                        //otherwise change the folder name or upload the files to root
+                        // e.g. /filename (root) instead of /Uploads/filename (you can name your folders differently)
+                        await dbx.Files.UploadAsync("/Uploads/" + filename,
                             WriteMode.Overwrite.Instance, body: mem);
                     }
                 }
